@@ -98,28 +98,28 @@ public class SelfOrganisingMap {
 //        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
 //        System.out.println("true count:"+countTrue);
 //        System.out.println("false count:"+countFalse);
-        som.trainMapWithSample(0.5,100);
+        som.trainMapWithSample(0.5,1);
         som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
         FileUtils fu = new FileUtils();
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt1.out");
 
 //        som.printTrueFalseCount(0.5);
-        som.trainMapWithSample(0.4,100);
+        som.trainMapWithSample(0.4,1);
         som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt2.out");
 
 //        som.printTrueFalseCount(0.4);
-        som.trainMapWithSample(0.3,100);
+        som.trainMapWithSample(0.3,1);
         som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt3.out");
 
 //        som.printTrueFalseCount(0.3);
-        som.trainMapWithSample(0.2,100);
+        som.trainMapWithSample(0.2,1);
         som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt4.out");
 
 //        som.printTrueFalseCount(0.2);
-        som.trainMapWithSample(0.1,100);
+        som.trainMapWithSample(0.1,1);
         som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt5.out");
 
@@ -288,7 +288,8 @@ public class SelfOrganisingMap {
     public void setCenterRandom(){
         for(int i = 0; i < neurons.length; i++){
             for(int j = 0; j < neurons[i].length; j++){
-                neurons[i][j].setZentrumRandom(28,28);
+//                neurons[i][j].setZentrumRandom(28,28);
+                neurons[i][j].setZentrumRandom(3,1);
             }
         }
     }
@@ -461,11 +462,11 @@ public class SelfOrganisingMap {
             for (int i = 0; i < trainInput.length; i++) {
                 double[][] input = changeArray(trainInput[i]);
                 Neuron winner = getMax(input);
-                lernen(zeitkoeffizient, winner, input);
-                lernen(zeitkoeffizient, winner.getnN(), input);
-                lernen(zeitkoeffizient, winner.getnO(), input);
-                lernen(zeitkoeffizient, winner.getnS(), input);
-                lernen(zeitkoeffizient, winner.getnW(), input);
+                lernen(zeitkoeffizient, winner, input,1);
+                lernen(zeitkoeffizient, winner.getnN(), input,0.5);
+                lernen(zeitkoeffizient, winner.getnO(), input,0.5);
+                lernen(zeitkoeffizient, winner.getnS(), input,0.5);
+                lernen(zeitkoeffizient, winner.getnW(), input,0.5);
             }
         }
 //        nE.input_train = al.get(0);
@@ -519,14 +520,14 @@ public class SelfOrganisingMap {
     }
 
 
-    public Neuron lernen(double zeitkoeffizient, Neuron winner, double[][] input){
+    public Neuron lernen(double zeitkoeffizient, Neuron winner, double[][] input, double nachbarschaftsZeugs){
         if(winner!=null) {
             double[][] wCenter = winner.getZentrum();
             for (int i = 0; i < wCenter.length; i++) {
                 for (int j = 0; j < wCenter[i].length; j++) {
                     double c = wCenter[i][j];
                     double lernrate = getLernrate(zeitkoeffizient, winner.getId(), winner.getId(), input[i][j], c);
-                    wCenter[i][j] = c + lernrate;
+                    wCenter[i][j] = c + lernrate*nachbarschaftsZeugs;
                 }
             }
             winner.setZentrum(wCenter);
@@ -573,26 +574,27 @@ public class SelfOrganisingMap {
     public boolean checkIfNearer(int rows, int cols, double[][] input,double[][] zentrum,double[][] currentMax){
         boolean isNearer=false;
         ArrayList<Integer> diffs = new ArrayList<Integer>();
+        int newMax = 0;
+
         for(int i = 0; i<rows; i++){
             for(int j = 0; j<cols; j++){
                 double diffIM = Math.abs(input[i][j]-currentMax[i][j]);
                 double diffIZ = Math.abs(input[i][j]-zentrum[i][j]);
-                if(diffIM==diffIZ){
-                    diffs.add(-1);
+                if (diffIZ < diffIM) {
+                    newMax++;
                 } else {
-                    if (diffIZ < diffIM) {
-                        diffs.add(1);
-                    } else {
-                        diffs.add(0);
-                    }
+                    newMax--;
                 }
             }
         }
-        int occurrencesOld = Collections.frequency(diffs, 0);
-        int occurrencesNew = Collections.frequency(diffs, 1);
-        if(occurrencesNew > occurrencesOld){
-            isNearer=true;
+        if(newMax>0){
+            isNearer = true;
         }
+//        int occurrencesOld = Collections.frequency(diffs, 0);
+//        int occurrencesNew = Collections.frequency(diffs, 1);
+//        if(occurrencesNew > occurrencesOld){
+//            isNearer=true;
+//        }
         return isNearer;
     }
 
