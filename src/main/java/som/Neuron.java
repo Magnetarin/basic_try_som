@@ -113,7 +113,7 @@ public class Neuron {
 
     public String toString(){
         String erg = "id: "+id+"\n";
-        erg+="\t Zentrum: \n"+printZentrum();
+        erg+="\t Zentrum: \n"+printZentrumHex();
         return erg;
     }
     private String printZentrumX(){
@@ -138,5 +138,18 @@ public class Neuron {
             erg+="\n";
         }
         return erg;
+    }
+    
+    public String printZentrumHex(){
+    	String erg = "";
+        for(int i = 0; i< zentrum.length;i++){
+            for(int j = 0; j< zentrum[i].length;j++){
+            	String hexStr = ((int)(zentrum[i][j]*255) == 0 ? "  " : Integer.toHexString((int)(zentrum[i][j]*255)).toUpperCase());
+            	hexStr = (hexStr.length()==1 ? "0"+hexStr : hexStr); 
+                erg+=" "+hexStr;
+            }
+            erg+="\n";
+        }
+    	return erg;    	
     }
 }

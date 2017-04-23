@@ -39,12 +39,15 @@ public class SelfOrganisingMap {
         //Funkt nicht!!!!!
         //Problem in getMax vermutlich
         int winnerIDBeforeTraining = 0;
+        FileUtils fu = new FileUtils();
         SelfOrganisingMap som = new SelfOrganisingMap();
-        som.init(10,5,28,28);
+        som.init(10,10,28,28);
 //        som.setCenterRandomExample(som.trainInput,som.trainOuput,5);
-        som.setCenterRandom();
+//        som.setCenterRandom();
 //        som.setCenter();
 //        som.trainMapWithSample(0.5);
+        som.setCenterRandomExamples1(som.trainInput, som.trainOuput);
+        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_ntStart.out");
         double[][] testInput = som.changeArray(som.trainInput[11]);
         Neuron winner = som.getMax(testInput);
 //        Neuron winner = som.neurons[0][0];
@@ -98,31 +101,32 @@ public class SelfOrganisingMap {
 //        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
 //        System.out.println("true count:"+countTrue);
 //        System.out.println("false count:"+countFalse);
-        som.trainMapWithSample(0.5,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
-        FileUtils fu = new FileUtils();
+        int time = 10;
+        som.trainMapWithSample(0.5,time);
+        som.neuronenZuGehoerigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt1.out");
 
 //        som.printTrueFalseCount(0.5);
-        som.trainMapWithSample(0.4,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        som.trainMapWithSample(0.4,time);
+        som.neuronenZuGehoerigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt2.out");
 
+        /*
 //        som.printTrueFalseCount(0.4);
-        som.trainMapWithSample(0.3,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        som.trainMapWithSample(0.3,time);
+        som.neuronenZuGehoerigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt3.out");
 
 //        som.printTrueFalseCount(0.3);
-        som.trainMapWithSample(0.2,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        som.trainMapWithSample(0.2,time);
+        som.neuronenZuGehoerigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt4.out");
 
 //        som.printTrueFalseCount(0.2);
-        som.trainMapWithSample(0.1,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        som.trainMapWithSample(0.1,time);
+        som.neuronenZuGehoerigkeit(som.trainInput,som.trainOuput);
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt5.out");
-
+*/
 //        som.printTrueFalseCount(0.1);
 
 //        System.out.println("trueIndex for 0 is: "+som.findTrueNum(0));
@@ -133,7 +137,7 @@ public class SelfOrganisingMap {
         fu = new FileUtils();
         fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new.out");
 
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        som.neuronenZuGehoerigkeit(som.trainInput,som.trainOuput);
 
         do{
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -144,14 +148,14 @@ public class SelfOrganisingMap {
                     int num = Integer.parseInt(s);
                     int output = som.numberTheOutputRepresents(som.trainOuput[num]);
                     int winnerID = som.getMax(som.changeArray(som.trainInput[num])).getId();
-                    System.out.println("Output: " + output);
+                    System.out.println("should Be: " + output);
                     System.out.println("Winner ID: " + winnerID);
                     System.out.println("Is ok? "+(output == winnerID));
                     if(!(output == winnerID)){
                         if(!(output == 1 && (winnerID==som.neurons.length-1||winnerID==som.neurons.length-2))) {
-                            System.out.println(som.printInput(som.changeArray(som.trainInput[num])));
+                            System.out.println(som.printInputHex(som.changeArray(som.trainInput[num])));
 //                            System.out.println("linenum: " + som.lineNumber[num]);
-                            System.out.println(som.getMax(som.changeArray(som.trainInput[num])).printZentrum());
+                            System.out.println(som.getMax(som.changeArray(som.trainInput[num])).printZentrumHex());
                         }
                     }
                 }
@@ -177,7 +181,8 @@ public class SelfOrganisingMap {
         // Netz trainiern, dann händisch die nueronen den eingängen zuordenen und dann prozent satz ermitteln
     }
 
-    public void neuronenZuGehörigkeit(double[][] input, double[][] output){
+    public void neuronenZuGehoerigkeit(double[][] input, double[][] output){
+    	zugehoerigkeit = new int[colCount*rowCount][10];
         for (int i = 0; i < input.length; i++) {
             Neuron g = getMax(changeArray(input[i]));
             double pos = numberTheOutputRepresents(output[i]);
@@ -238,6 +243,19 @@ public class SelfOrganisingMap {
         return erg;
     }
 
+    public String printInputHex(double[][] input){
+        String erg ="";
+        for(int i = 0; i< input.length;i++){
+            for(int j = 0; j< input[i].length;j++){
+            	String hexStr = ((int)(input[i][j]*255) == 0 ? "  " : Integer.toHexString((int)(input[i][j]*255)).toUpperCase());
+            	hexStr = (hexStr.length()==1 ? "0"+hexStr : hexStr); 
+                erg+=" "+hexStr;
+            }
+            erg+="\n";
+        }
+        return erg;
+    }
+
     public int findTrueNum(int num){
         int trueIndex = -1;
         boolean isFirstTime = true;
@@ -288,10 +306,23 @@ public class SelfOrganisingMap {
     public void setCenterRandom(){
         for(int i = 0; i < neurons.length; i++){
             for(int j = 0; j < neurons[i].length; j++){
-//                neurons[i][j].setZentrumRandom(28,28);
-                neurons[i][j].setZentrumRandom(3,1);
+                neurons[i][j].setZentrumRandom(28,28);
+                //neurons[i][j].setZentrumRandom(3,1);
             }
         }
+    }
+    
+    public void setCenterRandomExamples1(double[][] input, double[][] output){
+    	for(int i=0; i<neurons.length; i++){
+    		for(int j=0; j<neurons[i].length; j++){
+    			Neuron n = new Neuron();
+    			int x = (int)(Math.random()*input.length+1);
+    			double[][] zentrum = changeArray(input[x]);
+    			n.setZentrum(zentrum);
+    			n.setId(i+(j*rowCount));
+    			neurons[i][j] = n;
+    		}
+    	}
     }
 
     public void setCenterRandomExample(double[][] input, double[][] output,int anz){
@@ -498,14 +529,14 @@ public class SelfOrganisingMap {
         for(int i = 0; i<rows;i++){
             for(int j = 0; j<col;j++){
                 neurons[i][j] = new Neuron(i+j*mult,i,j);
-//                neurons[i][j].setZentrumRandom(cRows,cCols);
-                neurons[i][j].setZentrumZero(cRows,cCols);
+                neurons[i][j].setZentrumRandom(cRows,cCols);
+//                neurons[i][j].setZentrumZero(cRows,cCols);
             }
         }
         zugehoerigkeit = new int[rows*col][10];
         registerNeighbor();
-        getSample("C:\\Users\\Maxima\\FH\\bac\\basic_try\\src\\main\\resources\\train-images-idx3-ubyte",
-                "C:\\Users\\Maxima\\FH\\bac\\basic_try\\src\\main\\resources\\train-labels-idx1-ubyte");
+        getSample("..\\basic_try\\src\\main\\resources\\train-images-idx3-ubyte",
+                "..\\basic_try\\src\\main\\resources\\train-labels-idx1-ubyte");
     }
 
     public void registerNeighbor(){
