@@ -61,7 +61,8 @@ public class Neuron {
         zentrum = new double[rows][cols];
         for(int i = 0; i<rows; i++){
             for(int j = 0; j<cols; j++){
-                zentrum[i][j]=((int)(Math.random()*255+1))/255;
+//                zentrum[i][j]=((int)(Math.random()*255+1))/255;
+                zentrum[i][j]=((int)(Math.random()*255+1));
             }
         }
     }
@@ -131,11 +132,14 @@ public class Neuron {
     public String printZentrum(){
         DecimalFormat decimalFormat = new DecimalFormat("##.##");
         String erg ="";
+        boolean isFirst = true;
         for(int i = 0; i< zentrum.length;i++){
+            erg+=(isFirst ? "": "\n");
             for(int j = 0; j< zentrum[i].length;j++){
                 erg+="\t["+decimalFormat.format(zentrum[i][j])+"] ";
             }
-            erg+="\n";
+            isFirst = false;
+//            erg+="\n";
         }
         return erg;
     }

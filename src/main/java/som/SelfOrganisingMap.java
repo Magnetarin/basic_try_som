@@ -7,7 +7,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Created by Maxima on 19.03.2017.
@@ -23,6 +23,11 @@ public class SelfOrganisingMap {
     double[][] trainOuput;
     double[] lineNumber;
     int[][] zugehoerigkeit;
+    int glockenRadius = 1;
+    HashMap<Integer,ArrayList<Integer>> correctList = new HashMap<Integer, ArrayList<Integer>>();
+    HashMap<Integer,double[][]> trainInputHm = new HashMap<Integer, double[][]>();
+    HashMap<Integer,double[][]> trainOutputHm = new HashMap<Integer, double[][]>();
+    HashMap<Integer,Neuron[][]>  smallSoms = new HashMap<Integer, Neuron[][]>();
 
 //    Ziffer 0 checked 5923 times and 0 have been correct.
 //    Ziffer 1 checked 6742 times and 6725 have been correct.
@@ -40,7 +45,10 @@ public class SelfOrganisingMap {
         //Problem in getMax vermutlich
         int winnerIDBeforeTraining = 0;
         SelfOrganisingMap som = new SelfOrganisingMap();
-        som.init(10,5,28,28);
+        int h = 10;
+        int smallH = 10;
+        System.out.println(h+" x "+h+" Neuronen");
+        som.init(h,100,28,28,smallH,smallH);
 //        som.setCenterRandomExample(som.trainInput,som.trainOuput,5);
         som.setCenterRandom();
 //        som.setCenter();
@@ -95,45 +103,47 @@ public class SelfOrganisingMap {
             }
 
         }
-//        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
-//        System.out.println("true count:"+countTrue);
-//        System.out.println("false count:"+countFalse);
-        som.trainMapWithSample(0.5,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+
+//        som.trainOwn();
+
+//        som.klassischTrainiert();
+
         FileUtils fu = new FileUtils();
-        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt1.out");
+        long start = System.nanoTime();
+        som.trainMapWithSampleSmall(1,1);
+//        fu.writeText(som.printAllSmallSomNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_"+h+"_1.out");
+//        som.trainMapWithSampleSmall(2,10);
+//        fu.writeText(som.printAllSmallSomNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_"+h+"_2.out");
+//        som.trainMapWithSampleSmall(3,1);
+//        fu.writeText(som.printAllSmallSomNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_"+h+"_3.out");
+//        som.trainMapWithSampleSmall(4,1);
+//        fu.writeText(som.printAllSmallSomNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_"+h+"_4.out");
+//        som.trainMapWithSampleSmall(5,1);
+//        fu.writeText(som.printAllSmallSomNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_"+h+"_5.out");
+        long end = System.nanoTime();
 
-//        som.printTrueFalseCount(0.5);
-        som.trainMapWithSample(0.4,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
-        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt2.out");
+        for(int m = 0 ; m < 10 ;m++) {
+            Neuron[][] neurons = som.smallSoms.get(m);
+            for (int i = 0; i < neurons.length; i++) {
+                for (int j = 0; j < neurons.length; j++) {
+                    som.neurons[i][j+10*m].setZentrum(neurons[i][j].getZentrum());
+                    som.correctList.get(m).add(som.neurons[i][j+10*m].getId());
+                }
+            }
+        }
 
-//        som.printTrueFalseCount(0.4);
-        som.trainMapWithSample(0.3,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
-        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt3.out");
+        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_"+h+".out");
+        fu.writeText(som.printAllSmallSomNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new_small_"+h+".out");
 
-//        som.printTrueFalseCount(0.3);
-        som.trainMapWithSample(0.2,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
-        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt4.out");
+//        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        som.checkCorrect(som.trainInput,som.trainOuput);
 
-//        som.printTrueFalseCount(0.2);
-        som.trainMapWithSample(0.1,1);
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
-        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt5.out");
-
-//        som.printTrueFalseCount(0.1);
-
-//        System.out.println("trueIndex for 0 is: "+som.findTrueNum(0));
-//        System.out.println("falseIndex for 0 is: "+som.nextFalse(0));
-//        System.out.println("trueIndex for 1 is: "+som.findTrueNum(1));
-//        System.out.println("falseIndex for 1 is: "+som.nextFalse(1));
-
-        fu = new FileUtils();
-        fu.writeText(som.printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new.out");
-
-        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+        long diff = end-start;
+        System.out.println("endTime("+end+") - startTime("+start+") = "+(end-start)+"ns\n");
+        long sec = diff/1000000000;
+        long min = sec/60;
+        long hh = min/60;
+        System.out.println(String.format("%02d:%02d:%02d", hh, (min-hh*60), (sec-hh*60*60)));
 
         do{
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -177,7 +187,66 @@ public class SelfOrganisingMap {
         // Netz trainiern, dann händisch die nueronen den eingängen zuordenen und dann prozent satz ermitteln
     }
 
+    public void checkCorrect(double[][] input, double[][] output){
+        int[][] correct = new int[10][2];
+        for (int i = 0; i < input.length; i++) {
+            Neuron g = getMax(changeArray(input[i]));
+            double pos = numberTheOutputRepresents(output[i]);
+            if(correctList.get((int)pos).contains(g.getId())){
+                correct[(int)pos][0]++;
+            } else {
+                correct[(int)pos][1]++;
+            }
+        }
+        for(int i = 0; i<correct.length; i++){
+            System.out.println("Number "+i+ "\n\t"+correct[i][0]+" correct\n\t"+correct[i][1]+" incorrect\n");
+        }
+    }
+
+    public void klassischTrainiert(){
+
+        FileUtils fu = new FileUtils();
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt0.out");
+//        som.neuronenZuGehörigkeit(som.trainInput,som.trainOuput);
+//        System.out.println("true count:"+countTrue);
+//        System.out.println("false count:"+countFalse);
+        trainMapWithSample(0.5,1);
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt1.out");
+        neuronenZuGehörigkeit(trainInput,trainOuput);
+
+//        som.printTrueFalseCount(0.5);
+        trainMapWithSample(0.4,1);
+        neuronenZuGehörigkeit(trainInput,trainOuput);
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt2.out");
+
+//        som.printTrueFalseCount(0.4);
+        trainMapWithSample(0.3,1);
+        neuronenZuGehörigkeit(trainInput,trainOuput);
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt3.out");
+
+//        som.printTrueFalseCount(0.3);
+        trainMapWithSample(0.2,1);
+        neuronenZuGehörigkeit(trainInput,trainOuput);
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt4.out");
+
+//        som.printTrueFalseCount(0.2);
+        trainMapWithSample(0.1,1);
+        neuronenZuGehörigkeit(trainInput,trainOuput);
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_nt5.out");
+
+//        som.printTrueFalseCount(0.1);
+
+//        System.out.println("trueIndex for 0 is: "+som.findTrueNum(0));
+//        System.out.println("falseIndex for 0 is: "+som.nextFalse(0));
+//        System.out.println("trueIndex for 1 is: "+som.findTrueNum(1));
+//        System.out.println("falseIndex for 1 is: "+som.nextFalse(1));
+
+        fu = new FileUtils();
+        fu.writeText(printAllNeurons(),"C:\\Users\\Maxima\\Desktop\\som_new.out");
+    }
+
     public void neuronenZuGehörigkeit(double[][] input, double[][] output){
+        zugehoerigkeit = new int[rowCount*colCount][10];
         for (int i = 0; i < input.length; i++) {
             Neuron g = getMax(changeArray(input[i]));
             double pos = numberTheOutputRepresents(output[i]);
@@ -201,8 +270,9 @@ public class SelfOrganisingMap {
         for(int i = 0; i<trainInput.length;i++){
             int output = numberTheOutputRepresents(trainOuput[i]);
             int winnerID = getMax(changeArray(trainInput[i])).getId();
-            if(output != winnerID && output == num){
+            if(!correctList.get(output).contains(winnerID) && output == num){
                 falseIndex = i;
+                break;
                 /*if(num == 1) {
                     if(winnerID!=neurons.length-1 && winnerID!=neurons.length-2 && winnerID!=neurons.length-4 && winnerID!=neurons.length-6
                             && winnerID!=neurons.length-8 && winnerID!=neurons.length-10&& winnerID!=neurons.length-12 && winnerID!=neurons.length-14){
@@ -286,10 +356,17 @@ public class SelfOrganisingMap {
     }
 
     public void setCenterRandom(){
+        setCenterRandom(false);
+    }
+
+    public void setCenterRandom(boolean isFarb){
         for(int i = 0; i < neurons.length; i++){
             for(int j = 0; j < neurons[i].length; j++){
-//                neurons[i][j].setZentrumRandom(28,28);
-                neurons[i][j].setZentrumRandom(3,1);
+                if(isFarb){
+                    neurons[i][j].setZentrumRandom(3,1);
+                } else {
+                    neurons[i][j].setZentrumRandom(28,28);
+                }
             }
         }
     }
@@ -452,21 +529,78 @@ public class SelfOrganisingMap {
         }
     }
 
+    public void trainOwn(){
+        boolean isFirst = true;
+        int m = 0;
+        int n = 0;
+        for(int i = 0; i < trainInput.length;i++){
+            double[][] input = changeArray(trainInput[i]);
+            int output = numberTheOutputRepresents(trainOuput[i]);
+            if(isFirst){
+                neurons[m][n].setZentrum(input);
+                isFirst=false;
+                continue;
+            }
+            int nf_index = nextFalse(output);
+            if(nf_index == -1){
+                continue;
+            }
+            neurons[m][n].setZentrum(changeArray(trainInput[nf_index]));
+            correctList.get(output).add(neurons[m][n].getId());
+            if(n<(neurons[m].length-1)){
+                n++;
+            } else {
+                n=0;
+                m++;
+            }
+            if(m==neurons.length){
+                break;
+            }
+        }
+    }
+
+    public void trainMapWithSampleSmall(double zeitkoeffizient,int time){
+        for(int i = 0; i < 10; i++){
+            trainMapWithSample(zeitkoeffizient,time,smallSoms.get(i),trainInputHm.get(i));
+        }
+//        trainMapWithSample(zeitkoeffizient,time,smallSoms.get(1),trainInputHm.get(1));
+//        trainMapWithSample(zeitkoeffizient,time,smallSoms.get(7),trainInputHm.get(7));
+    }
+
     public void trainMapWithSample(double zeitkoeffizient){
         trainMapWithSample(zeitkoeffizient,1);
     }
 
     public void trainMapWithSample(double zeitkoeffizient,int time){
+        trainMapWithSample(zeitkoeffizient,time,null,null);
+    }
+
+    public void trainMapWithSample(double zeitkoeffizient,int time,Neuron[][] networkToTrain,double[][] inputSamples){
         System.out.println("Training Map with: "+zeitkoeffizient+" and "+time);
+        if(networkToTrain == null){
+            networkToTrain = neurons;
+        }
+        if(inputSamples == null){
+            inputSamples = trainInput;
+        }
         for(int j = 0; j<time;j++) {
-            for (int i = 0; i < trainInput.length; i++) {
-                double[][] input = changeArray(trainInput[i]);
+            for (int i = 0; i < inputSamples.length; i++) {
+                double[][] input = changeArray(inputSamples[i]);
                 Neuron winner = getMax(input);
-                lernen(zeitkoeffizient, winner, input,1);
-                lernen(zeitkoeffizient, winner.getnN(), input,0.5);
-                lernen(zeitkoeffizient, winner.getnO(), input,0.5);
-                lernen(zeitkoeffizient, winner.getnS(), input,0.5);
-                lernen(zeitkoeffizient, winner.getnW(), input,0.5);
+                for(int k = 0; k < networkToTrain.length; k++){
+                    for(int l = 0; l <networkToTrain[k].length; l++) {
+                        Neuron n = networkToTrain[k][l];
+                        int distance = FarbSOM.getDistance(winner.x, n.x, winner.y, n.y);
+                        if(distance > glockenRadius){
+                            continue;
+                        }
+//                        (lernrate im laufe der zeit) · h(i, k, t) · (p − ck)
+//                        h(i, k, t) = e(−(|gi−gk|^2)/(2·o(t)^2))
+//                        o ... breite der glocke
+                        double a = glockenRadius - zeitkoeffizient / glockenRadius;
+                        lernen(n, input, (1 - (zeitkoeffizient / 100)) * Math.exp(-distance / (a < 0 ? 0.1 : a)));
+                    }
+                }
             }
         }
 //        nE.input_train = al.get(0);
@@ -490,7 +624,7 @@ public class SelfOrganisingMap {
         return erg;
     }
 
-    public void init(int rows,int col,int cRows, int cCols){
+    public void init(int rows,int col,int cRows, int cCols,int smallSomRows,int smallSomCols){
         rowCount = rows;
         colCount = col;
         int mult = (rows>col? col :rows);
@@ -498,12 +632,27 @@ public class SelfOrganisingMap {
         for(int i = 0; i<rows;i++){
             for(int j = 0; j<col;j++){
                 neurons[i][j] = new Neuron(i+j*mult,i,j);
-//                neurons[i][j].setZentrumRandom(cRows,cCols);
-                neurons[i][j].setZentrumZero(cRows,cCols);
+                neurons[i][j].setZentrumRandom(cRows,cCols);
+//                neurons[i][j].setZentrumZero(cRows,cCols);
             }
         }
         zugehoerigkeit = new int[rows*col][10];
         registerNeighbor();
+        int[] blub = {5923, 6742, 5958, 6131, 5842, 5421, 5918, 6265, 5851, 5949};
+        mult = (smallSomRows>smallSomCols? smallSomCols :smallSomRows);
+        for(int i = 0; i < 10; i++){
+            correctList.put(i,new ArrayList<Integer>());
+            trainInputHm.put(i,new double[blub[i]][rowCount*colCount]);
+            trainOutputHm.put(i,new double[blub[i]][rowCount*colCount]);
+            Neuron[][] ns = new Neuron[smallSomRows][smallSomCols];
+            smallSoms.put(i,ns);
+            for(int j = 0; j <smallSomRows; j++){
+                for(int k = 0; k < smallSomCols; k++){
+                    smallSoms.get(i)[j][k] = new Neuron(j+k*mult,j,k);
+                    smallSoms.get(i)[j][k].setZentrumRandom(cRows,cCols);
+                }
+            }
+        }
         getSample("C:\\Users\\Maxima\\FH\\bac\\basic_try\\src\\main\\resources\\train-images-idx3-ubyte",
                 "C:\\Users\\Maxima\\FH\\bac\\basic_try\\src\\main\\resources\\train-labels-idx1-ubyte");
     }
@@ -511,7 +660,7 @@ public class SelfOrganisingMap {
     public void registerNeighbor(){
         for(int i = 0; i<rowCount;i++){
             for(int j = 0; j<colCount;j++){
-                neurons[i][j].setnN((i-1) >  -1        ? neurons[i-1][j] : null);
+                neurons[i][j].setnN((i-1) >  -1       ? neurons[i-1][j] : null);
                 neurons[i][j].setnO((j+1) < colCount  ? neurons[i][j+1] : null);
                 neurons[i][j].setnS((i+1) < rowCount  ? neurons[i+1][j] : null);
                 neurons[i][j].setnW((j-1) >  -1        ? neurons[i][j-1] : null);
@@ -520,14 +669,15 @@ public class SelfOrganisingMap {
     }
 
 
-    public Neuron lernen(double zeitkoeffizient, Neuron winner, double[][] input, double nachbarschaftsZeugs){
+    public Neuron lernen(Neuron winner, double[][] input, double adjustment){
         if(winner!=null) {
             double[][] wCenter = winner.getZentrum();
             for (int i = 0; i < wCenter.length; i++) {
                 for (int j = 0; j < wCenter[i].length; j++) {
                     double c = wCenter[i][j];
-                    double lernrate = getLernrate(zeitkoeffizient, winner.getId(), winner.getId(), input[i][j], c);
-                    wCenter[i][j] = c + lernrate*nachbarschaftsZeugs;
+                    double lernrate = getLernrate(input[i][j], c, adjustment);
+                    double nC = (int)(c + (lernrate*adjustment));
+                    wCenter[i][j] = nC;
                 }
             }
             winner.setZentrum(wCenter);
@@ -535,17 +685,10 @@ public class SelfOrganisingMap {
         return winner;
     }
 
-    public double getLernrate(double zeitkoeffizient, int iId, int kId, double input, double z){
+    public double getLernrate(double input, double z, double adjustment){
         double lernrate = 0;
-        double magic = 0;
-        if(iId==kId){
-            magic = 1;
-        } else {
-            if((iId-kId) == 1 || (iId-kId) == -1){
-                magic = 1;
-            }
-        }
-        lernrate = zeitkoeffizient * magic * (input-z);
+        int magic = 1;
+        lernrate = (int) (magic * (input-z));
         return lernrate;
     }
 
@@ -575,21 +718,34 @@ public class SelfOrganisingMap {
         boolean isNearer=false;
         ArrayList<Integer> diffs = new ArrayList<Integer>();
         int newMax = 0;
-
+        double diffIM = 0;
+        double diffIZ = 0;
         for(int i = 0; i<rows; i++){
             for(int j = 0; j<cols; j++){
-                double diffIM = Math.abs(input[i][j]-currentMax[i][j]);
-                double diffIZ = Math.abs(input[i][j]-zentrum[i][j]);
-                if (diffIZ < diffIM) {
-                    newMax++;
-                } else {
-                    newMax--;
-                }
+                diffIM += Math.abs(input[i][j]-currentMax[i][j]);
+                diffIZ += Math.abs(input[i][j]-zentrum[i][j]);
+
+//                if(diffIM != diffIZ) {
+//                    if (diffIZ < diffIM) {
+//                        newMax++;
+//                    } else {
+//                        newMax--;
+//                    }
+//                }
             }
         }
-        if(newMax>0){
+        if(diffIZ < diffIM){
             isNearer = true;
         }
+        if(diffIM == diffIZ){
+            int dice = (int)Math.random()*2;
+            if(dice==1){
+                isNearer=true;
+            }
+        }
+//        if(newMax>0){
+//            isNearer = true;
+//        }
 //        int occurrencesOld = Collections.frequency(diffs, 0);
 //        int occurrencesNew = Collections.frequency(diffs, 1);
 //        if(occurrencesNew > occurrencesOld){
@@ -605,6 +761,24 @@ public class SelfOrganisingMap {
                 erg+=neurons[i][j].toString();
             }
         }
+        return erg;
+    }
+
+    private String printAllSmallSomNeurons(){
+        String erg = "";
+        for(int i = 0; i<smallSoms.size();i++){
+//            if(i == 1 || i == 7) {
+                erg += i + " Ziffer Map\n";
+                Neuron[][] toTrain = smallSoms.get(i);
+                for (int j = 0; j < toTrain.length; j++) {
+                    for (int k = 0; k < toTrain[j].length; k++) {
+                        erg += toTrain[j][k].toString();
+                    }
+                    erg+="\n";
+                }
+                erg += "\n####################################################\n";
+            }
+//        }
         return erg;
     }
 
@@ -670,14 +844,16 @@ public class SelfOrganisingMap {
                 fin_label.read(label,0,1);
 //                if(label[0] == 1 || label[0] == 0) {
                     trainInput[i] = toDoubleArray(data);
+                    trainInputHm.get((int)label[0])[labelCount[label[0]]]=toDoubleArray(data);
                     double[] labelNum = getLabelNumber(label[0]);
                     trainOuput[i] = labelNum;
-                    labelCount[label[0]] = labelCount[label[0]] + 1;
+                    trainOutputHm.get((int)label[0])[labelCount[label[0]]]=labelNum;
                     anz++;
+                    labelCount[label[0]] = labelCount[label[0]] + 1;
 //                    lineNumber[i]=countLineNum;
 //                  i++;
 //                }
-//                i--
+//                i--;
                 countLineNum++;
             }
             System.out.println("Test anz: "+anz);
@@ -747,7 +923,8 @@ public class SelfOrganisingMap {
             char[] charAr = Hex.encodeHex(new byte[]{byteArray[i]});
             String s = new String(charAr);
             int number = Integer.parseInt(s,16);
-            doubles[i] = (double)number/255;
+//            doubles[i] = (double)number/255;
+            doubles[i] = (double)number;
         }
         return doubles;
     }

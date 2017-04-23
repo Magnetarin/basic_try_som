@@ -10,10 +10,10 @@ public class FarbNeuron {
     int[] zentrum;
     int x = 0;
     int y = 0;
-    Neuron nN;
-    Neuron nO;
-    Neuron nS;
-    Neuron nW;
+    FarbNeuron nN;
+    FarbNeuron nO;
+    FarbNeuron nS;
+    FarbNeuron nW;
 
     public FarbNeuron(){
 
@@ -58,44 +58,45 @@ public class FarbNeuron {
     }
 
     public void setZentrumRandom() {
+        zentrum = new int[3];
         zentrum[0] = ((int)(Math.random()*255+1));
         zentrum[1] = ((int)(Math.random()*255+1));
         zentrum[2] = ((int)(Math.random()*255+1));
     }
 
-    public Neuron[] getAllNeighbor(){
-        return new Neuron[]{nN,nO,nS,nW};
+    public FarbNeuron[] getAllNeighbor(){
+        return new FarbNeuron[]{nN,nO,nS,nW};
     }
 
-    public Neuron getnN() {
+    public FarbNeuron getnN() {
         return nN;
     }
 
-    public void setnN(Neuron nN) {
+    public void setnN(FarbNeuron nN) {
         this.nN = nN;
     }
 
-    public Neuron getnO() {
+    public FarbNeuron getnO() {
         return nO;
     }
 
-    public void setnO(Neuron nO) {
+    public void setnO(FarbNeuron nO) {
         this.nO = nO;
     }
 
-    public Neuron getnS() {
+    public FarbNeuron getnS() {
         return nS;
     }
 
-    public void setnS(Neuron nS) {
+    public void setnS(FarbNeuron nS) {
         this.nS = nS;
     }
 
-    public Neuron getnW() {
+    public FarbNeuron getnW() {
         return nW;
     }
 
-    public void setnW(Neuron nW) {
+    public void setnW(FarbNeuron nW) {
         this.nW = nW;
     }
 
