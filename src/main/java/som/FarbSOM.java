@@ -15,12 +15,12 @@ public class FarbSOM {
     int rowCount=0;
     int colCount=0;
     int[][] trainInput;
-    private double glockenRadius = 1;
+    private double glockenRadius = 10;
     public JFrame frame = null;
 
     public static void main(String[] args){
         FarbSOM som = new FarbSOM();
-        int length = 10;
+        int length = 30;
         som.init(length,length,3,1);
         som.setCenterRandom(true);
 
