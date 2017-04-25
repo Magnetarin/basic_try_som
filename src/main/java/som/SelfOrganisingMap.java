@@ -21,6 +21,8 @@ public class SelfOrganisingMap {
     int baisValue = 1;
     double[][] trainInput;
     double[][] trainOuput;
+    double[][] checkInput;
+    double[][] checkOuput;
     double[] lineNumber;
     int[][] zugehoerigkeit;
     int glockenRadius = 2;
@@ -270,10 +272,10 @@ public class SelfOrganisingMap {
             }
         }
         for(int i = 0; i<correct.length; i++){
-            if(i==1 || i == 7) {
+//            if(i==1 || i == 7) {
                 double percent = correct[i][0] / (maxCounts[i] / 100);
                 System.out.println("Number " + i + "\n\t" + correct[i][0] + " correct\n\t" + correct[i][1] + " incorrect\n\t" + decimalFormat.format(percent) + "%");
-            }
+//            }
         }
     }
 
